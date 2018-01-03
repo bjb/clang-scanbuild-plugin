@@ -20,50 +20,24 @@
  * THE SOFTWARE.
  */
 package jenkins.plugins.clangscanbuild.history;
+import java.util.Comparator;
+import jenkins.plugins.clangscanbuild.history.ClangScanBuildBug;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.TreeSet;
-import java.util.SortedSet;
-import java.util.List;
-import java.util.Set;
-
-import jenkins.plugins.clangscanbuild.history.ClangScanBuildBugComparator;
-
-public class ClangScanBuildBugSummary {
-
-	private int buildNumber;
-    public SortedSet<ClangScanBuildBug> bugs = new TreeSet<ClangScanBuildBug>(new ClangScanBuildBugComparator());
-	
-	public boolean contains( ClangScanBuildBug bug ){
-		for( ClangScanBuildBug candidate : bugs ){
-			if( bug.getBugDescription().equals( candidate.getBugDescription() ) ) return true;
-		}
-		return false;
+public class ClangScanBuildBugComparator implements Comparator<ClangScanBuildBug> {
+    @Override
+    public int compare (ClangScanBuildBug left, ClangScanBuildBug right) {
+	int answer = 0;
+	int bugTypeCompare = left.bugType.compareTo(right.bugType);
+	int bugSourceFileCompare = left.sourceFile.compareTo(right.sourceFile);
+	if (bugSourceFileCompare != 0) {
+	    answer = bugSourceFileCompare;
+	} else {
+	    if (bugTypeCompare != 0) {
+		answer = bugTypeCompare;
+	    } else {
+		answer = left.reportFile.compareTo(right.reportFile);
+	    }
 	}
-	
-	public ClangScanBuildBugSummary( int buildNumber ){
-		this.buildNumber = buildNumber;
-	}
-	
-	public boolean add( ClangScanBuildBug bug ){
-		return bugs.add( bug );
-	}
-	
-	public int getBugCount(){
-		return bugs.size();
-	}
-
-	public List<ClangScanBuildBug> getBugs() {
-		return new ArrayList<ClangScanBuildBug>( bugs );
-	}
-
-	public void addBugs( Collection<ClangScanBuildBug> bugs ) {
-		this.bugs.addAll( bugs );
-	}
-
-	public int getBuildNumber() {
-		return buildNumber;
-	}
-
+	return answer;
+    }
 }
