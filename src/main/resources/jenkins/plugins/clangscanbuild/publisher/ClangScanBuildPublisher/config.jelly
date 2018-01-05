@@ -14,6 +14,10 @@
 	      
 	    </f:optionalBlock>
 
+	    <f:entry title="whitespace-separated list of strings to omit" field="omitStrs">
+			<f:textbox default="LL_DELETE" />
+	    </f:entry>
+
 	    <f:entry title="Report folder" field="reportFolderName">
 				<f:textbox default="clangScanBuildReports"/>
 		</f:entry>

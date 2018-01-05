@@ -28,6 +28,7 @@ import hudson.model.AbstractBuild;
 public class ClangScanBuildUtils{
 	public static final String SHORTNAME = "clang-scanbuild-plugin";
 	public static final String REPORT_OUTPUT_FOLDERNAME = "clangScanBuildReports";
+	public static final String OMIT_STRS = "HASH_DEL LL_DELETE TAILQ_REMOVE LL_COUNT TAILQ_FOREACH";
 	
 	public static String getIconsPath(){
 		return "/plugin/" + SHORTNAME + "/icons/";

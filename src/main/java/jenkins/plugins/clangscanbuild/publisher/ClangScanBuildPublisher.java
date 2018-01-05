@@ -38,6 +38,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -67,23 +68,25 @@ public class ClangScanBuildPublisher extends Recorder{
 
 	private static final Pattern ENDPATH_PATTERN = Pattern.compile( "^(.*<div id=\"EndPath\" .*)$", Pattern.MULTILINE );
 
-	private static final Pattern HASH_DEL_PATTERN = Pattern.compile( "(HASH_DEL)" );
-	private static final Pattern LL_DELETE_PATTERN = Pattern.compile( "(LL_DELETE)" );
-	private static final Pattern TAILQ_REMOVE_PATTERN = Pattern.compile( "(TAILQ_REMOVE)" );
-	private static final Pattern LL_COUNT_PATTERN = Pattern.compile( "(LL_COUNT)" );
-	private static final Pattern TAILQ_FOREACH_PATTERN = Pattern.compile( "(TAILQ_FOREACH)" );
+	// private static final Pattern HASH_DEL_PATTERN = Pattern.compile( "(HASH_DEL)" );
+	// private static final Pattern LL_DELETE_PATTERN = Pattern.compile( "(LL_DELETE)" );
+	// private static final Pattern TAILQ_REMOVE_PATTERN = Pattern.compile( "(TAILQ_REMOVE)" );
+	// private static final Pattern LL_COUNT_PATTERN = Pattern.compile( "(LL_COUNT)" );
+	// private static final Pattern TAILQ_FOREACH_PATTERN = Pattern.compile( "(TAILQ_FOREACH)" );
 
-	private static final Pattern[] REJECT_PATTERNS = {
-	   HASH_DEL_PATTERN,
-	   LL_DELETE_PATTERN,
-	   TAILQ_REMOVE_PATTERN,
-	   LL_COUNT_PATTERN,
-	   TAILQ_FOREACH_PATTERN
-	};
+	// private static final Pattern[] REJECT_PATTERNS = {
+	//    HASH_DEL_PATTERN,
+	//    LL_DELETE_PATTERN,
+	//    TAILQ_REMOVE_PATTERN,
+	//    LL_COUNT_PATTERN,
+	//    TAILQ_FOREACH_PATTERN
+	// };
 
 	private int bugThreshold;
 	private String clangexcludedpaths; 
 	private String reportFolderName;
+	private String omitStrs;
+	private Set<Pattern> omitPatterns;
 
 	private boolean markBuildUnstableWhenThresholdIsExceeded;
 
@@ -91,7 +94,9 @@ public class ClangScanBuildPublisher extends Recorder{
 			boolean markBuildUnstableWhenThresholdIsExceeded, 
 			int bugThreshold,
 			String clangexcludedpaths,
-			String reportFolderName
+			String reportFolderName,
+			String omitStrs,
+			Set<Pattern> omitPatterns
       ){
 
 		super();
@@ -99,6 +104,8 @@ public class ClangScanBuildPublisher extends Recorder{
 		this.bugThreshold = bugThreshold;
 		this.clangexcludedpaths = Util.fixNull(clangexcludedpaths);
 		this.reportFolderName = Util.fixNull(reportFolderName);
+		this.omitStrs = omitStrs;
+		this.omitPatterns = omitPatterns;
 	}
 
 	public int getBugThreshold() {
@@ -123,6 +130,22 @@ public class ClangScanBuildPublisher extends Recorder{
 
 	public String getReportFolderName(){
 		return reportFolderName;
+	}
+
+	public void setOmitStrs(String omitStrs){
+		this.omitStrs = Util.fixNull(omitStrs);
+	}
+
+	public String getOmitStrs(){
+		return omitStrs;
+	}
+
+	public void setOmitPatterns(Set<Pattern> omitPatterns){
+		this.omitPatterns = Util.fixNull(omitPatterns);
+	}
+
+	public Set<Pattern> getOmitPatterns(){
+		return this.omitPatterns;
 	}
 
 
@@ -318,7 +341,7 @@ public class ClangScanBuildPublisher extends Recorder{
 			    return null;
 			}
 			// check for one fo the forbidden patterns in that line
-			for (Pattern pattern : REJECT_PATTERNS) {
+			for (Pattern pattern : omitPatterns) {
 			    if (getMatch(pattern, endPathLine) != null) {
 				// reject this one; no need to continue
 				return null;

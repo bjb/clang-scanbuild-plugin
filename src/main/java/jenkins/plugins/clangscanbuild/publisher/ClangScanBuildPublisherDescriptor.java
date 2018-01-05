@@ -29,6 +29,9 @@ import org.kohsuke.stapler.StaplerRequest;
 import hudson.model.AbstractProject;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Publisher;
+import java.util.regex.Pattern;
+import java.util.Set;
+import java.util.HashSet;
 
 
 public class ClangScanBuildPublisherDescriptor extends BuildStepDescriptor<Publisher>{
@@ -45,6 +48,8 @@ public class ClangScanBuildPublisherDescriptor extends BuildStepDescriptor<Publi
 		int bugThreshold = 0;
 		String excludedPaths = "";
 		String reportFolderName = ClangScanBuildUtils.REPORT_OUTPUT_FOLDERNAME;
+		String omitStrings = "";  // space-separated words, all one string
+		Set<Pattern> omitPatterns = new HashSet<Pattern> ();
 
 		JSONObject failWhenThresholdExceeded = json.optJSONObject( "failWhenThresholdExceeded" );
 		if( failWhenThresholdExceeded != null ){
@@ -55,7 +60,19 @@ public class ClangScanBuildPublisherDescriptor extends BuildStepDescriptor<Publi
 
 		reportFolderName = json.getString("reportFolderName");
 
-		return new ClangScanBuildPublisher( markBuildUnstable, bugThreshold, excludedPaths, reportFolderName );
+		omitStrings = json.getString("omitStrs");
+		if ((omitStrings == null) || (omitStrings == "")) {
+		    omitStrings = ClangScanBuildUtils.OMIT_STRS;
+		} else {
+		    // split omitStrings into words, add parens around each,
+		    // make them into regexes and add to omitPatterns
+		    String omitArray[] = omitStrings.split("\\s+");
+		    for (String os : omitArray) {
+			omitPatterns.add(Pattern.compile("(" + os + ")"));
+		    }
+		}
+
+		return new ClangScanBuildPublisher( markBuildUnstable, bugThreshold, excludedPaths, reportFolderName, omitStrings, omitPatterns );
 	}
 
 	@Override
